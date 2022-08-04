@@ -1,24 +1,47 @@
 <template>
-  <section class="px-2 lg:px-12 py-4 lg:py-8 bg-white mb-12">
-    <header class="flex justify-between items-center">
-      <router-link to="https://basalam.com">
-        <img
-          src="https://statics.basalam.com/resources/img/basalam-logotype.34a414e.svg"
-          alt="basalam log"
-        />
-      </router-link>
-      <div class="flex gap-8 font-semibold text-lg">
-        <div><router-link to="/">خانه</router-link></div>
-        <div><router-link to="/">دسته بندی‌ها</router-link></div>
-        <div><router-link to="/">گفت و گو</router-link></div>
-        <div><router-link to="/">پروفایل</router-link></div>
+  <section class="shadow-lg py-4 mb-12">
+    <header class="container mx-auto">
+      <div class="flex justify-between items-center">
+        <div class="flex justify-start items-center w-full">
+          <input
+            type="text"
+            placeholder="جستجو در تانک..."
+            v-model.lazy.trim="search"
+            class="bg-gray-100 h-10 w-1/3 px-2 focus:outline-none"
+            @keyup.enter="searchQuery"
+          />
+          <div class="bg-gray-100 h-10 leading-10 px-2" @click="searchQuery">
+            <i class="fas fa-search text-gray-500"></i>
+          </div>
+        </div>
+        <a href="https://tank.ir">
+          <img
+            src="https://tank.ir/_nuxt/img/logoType.cdfbb44.svg"
+            alt="tank logo"
+            width="150"
+          />
+        </a>
       </div>
     </header>
   </section>
 </template>
 
-<script>
-export default {};
+<script setup>
+import { ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
+const search = ref();
+
+const router = useRouter();
+const route = useRoute();
+
+function searchQuery() {
+  const query = { ...route.query };
+  query.search_phrase = search.value;
+  router.replace({
+    path: "/p",
+    query: { ...query },
+  });
+}
 </script>
 
 <style></style>
