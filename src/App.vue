@@ -1,12 +1,4 @@
-<script setup>
-import { RouterView } from "vue-router";
-import Header from "@/components/Header.vue";
-import Footer from "@/components/Footer.vue";
-import Main from "./components/main/Main.vue";
-</script>
-
 <template>
-  
   <Header class="w-full shadow-2xl" />
   <div class="container mx-auto">
     <router-view />
@@ -14,4 +6,9 @@ import Main from "./components/main/Main.vue";
   <Footer class="w-full" />
 </template>
 
-<style scoped></style>
+<script setup>
+import { RouterView } from "vue-router";
+import Header from "@/components/Header.vue";
+import Footer from "@/components/Footer.vue";
+import Main from "./components/main/Main.vue";
+</script>

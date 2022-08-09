@@ -19,44 +19,68 @@
     <div class="md:col-span-3 flex flex-col gap-2">
       <div>
         <div
-          class="bg-blue-200 text-blue-600 font-semibold py-1 px-4 rounded-full m-2 inline-block"
-          v-if="route.query?.ram_values"
+          v-for="(ram, index) in Object.entries(filters.ramValues)"
+          :key="index"
+          class="inline-block"
         >
-          رم {{ toPersianNumber(parseInt(route.query?.ram_values)) }} گیگ
-          <span class="cursor-pointer pr-2 text-lg" @click="deleteRamValues"
-            >&times;</span
+          <div
+            class="bg-blue-200 text-blue-600 font-semibold py-1 px-4 rounded-full m-2"
+            v-if="ram[1] == true"
           >
+            رم {{ toPersianNumber(parseInt(ram[0])) }} گیگ
+            <span
+              class="cursor-pointer pr-2 text-lg"
+              @click="deleteRamValues($event)"
+              :aria-label="ram[0]"
+              >&times;</span
+            >
+          </div>
         </div>
         <div
           class="bg-blue-200 text-blue-600 font-semibold py-1 px-4 rounded-full m-2 inline-block"
-          v-if="route.query?.price_from && route.query?.price_from != 0"
+          v-if="filters.price.oldPriceFrom != 0"
         >
-          حداقل قیمت: {{ route.query?.price_from }}
+          حداقل قیمت: {{ filters.price?.oldPriceFrom }}
           <span
             class="cursor-pointer pr-2 text-lg"
-            @click="deleteFilter('price_from')"
+            @click="
+              (url = url.replace(
+                `&price_from=${filters.price.oldPriceFrom}`,
+                ''
+              )) && (filters.price.oldPriceFrom = filters.price.priceFrom = 0)
+            "
             >&times;</span
           >
+          <!-- {{ filters.price.oldPriceFrom }} -->
         </div>
         <div
           class="bg-blue-200 text-blue-600 font-semibold py-1 px-4 rounded-full m-2 inline-block"
-          v-if="route.query?.price_to && route.query?.price_to != 30000000"
+          v-if="filters.price.oldPriceTo != 30000000"
         >
-          حداکثر قیمت: {{ route.query?.price_to }}
+          حداکثر قیمت: {{ filters.price?.oldPriceTo }}
           <span
             class="cursor-pointer pr-2 text-lg"
-            @click="deleteFilter('price_to')"
+            @click="
+              (url = url.replace(
+                `&price_to=${filters.price.oldPriceTo}`,
+                ''
+              )) &&
+                (filters.price.priceTo = filters.price.oldPriceTo = 30000000)
+            "
             >&times;</span
           >
         </div>
         <div
           class="bg-blue-200 text-blue-600 font-semibold py-1 px-4 rounded-full m-2 inline-block"
-          v-if="route.query?.has_report"
+          v-if="filters.hasReport"
         >
           کارنامه دار
           <span
             class="cursor-pointer pr-2 text-lg"
-            @click="deleteFilter('has_report')"
+            @click="
+              (url = url.replace('has_report=true', '')) &&
+                (filters.hasReport = false)
+            "
             >&times;</span
           >
         </div>
@@ -67,7 +91,7 @@
           type="checkbox"
           id="has-report"
           v-model="filters.hasReport"
-          @click="hasReported('has_report', !filters.hasReport)"
+          @input="hasReported()"
         />
       </div>
       <hr />
@@ -97,7 +121,7 @@
               id="2GB"
               value="2GB"
               v-model="filters.ramValues['2GB']"
-              @input="addRamValues($event, !filters.ramValues['2GB'])"
+              @input="addRamValues()"
             />
             <label class="mx-2" for="2GB">۲ گیگابایت</label>
           </div>
@@ -108,7 +132,7 @@
               id="3GB"
               value="3GB"
               v-model="filters.ramValues['3GB']"
-              @input="addRamValues($event, !filters.ramValues['3GB'])"
+              @input="addRamValues()"
             />
             <label class="mx-2" for="3GB">۳ گیگابایت</label>
           </div>
@@ -119,7 +143,7 @@
               id="4GB"
               value="4GB"
               v-model="filters.ramValues['4GB']"
-              @input="addRamValues($event, !filters.ramValues['4GB'])"
+              @input="addRamValues()"
             />
             <label class="mx-2" for="4GB">۴ گیگابایت</label>
           </div>
@@ -130,7 +154,7 @@
               id="6GB"
               value="6GB"
               v-model="filters.ramValues['6GB']"
-              @input="addRamValues($event, !filters.ramValues['6GB'])"
+              @input="addRamValues()"
             />
             <label class="mx-2" for="6GB">۶ گیگابایت</label>
           </div>
@@ -141,7 +165,7 @@
               id="8GB"
               value="8GB"
               v-model="filters.ramValues['8GB']"
-              @input="addRamValues($event, !filters.ramValues['8GB'])"
+              @input="addRamValues()"
             />
             <label class="mx-2" for="8GB">۸ گیگابایت</label>
           </div>
@@ -172,12 +196,12 @@
           <div class="w-full flex justify-between items-center" dir="rtl">
             <span>از</span>
             <span class="w-24 h-8 bg-gray-100 leading-8 text-center">{{
-              insertrialcamma(toPersianNumber(filters.priceFrom))
+              insertrialcamma(toPersianNumber(filters.price.priceFrom))
             }}</span>
             <img src="@/assets/images/Toman.svg" alt="" />
             <span>تا</span>
             <span class="w-24 h-8 bg-gray-100 leading-8 text-center">{{
-              insertrialcamma(toPersianNumber(filters.priceTo))
+              insertrialcamma(toPersianNumber(filters.price.priceTo))
             }}</span>
             <img src="@/assets/images/Toman.svg" alt="" />
           </div>
@@ -186,8 +210,8 @@
             :max="30000000"
             :step="100000"
             :ruler="false"
-            :minValue="filters.priceFrom"
-            :maxValue="filters.priceTo"
+            :minValue="filters.price.priceFrom"
+            :maxValue="filters.price.priceTo"
             @input="UpdateValues"
           />
           <button
@@ -207,12 +231,16 @@
         class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center items-center gap-8 mx-2"
       >
         <div v-for="item in items?.posts" :key="item.id">
-          <component :is="componentName.component" :data="item" />
+          <ShowPhone :data="item" />
         </div>
       </div>
       <div v-else>
         <span>هیچ آگهی با این شرایط وجود ندارد</span>
-        <button type="button" class="text-white bg-blue-500 px-4 py-2 mr-4" @click="router.push({ query: null })">
+        <button
+          type="button"
+          class="text-white bg-blue-500 px-4 py-2 mr-4"
+          @click="deleteAllFilters()"
+        >
           حذف فیلترها
         </button>
       </div>
@@ -226,24 +254,21 @@ import { useRouter, useRoute } from "vue-router";
 import MultiRangeSlider from "multi-range-slider-vue";
 import axios from "axios";
 import ShowPhone from "./ShowPhone.vue";
-import NewPhone from "../main/NewPhone.vue";
 import Loading from "../Loading.vue";
 import insertrialcamma from "@/assets/js/insertrialcamma.js";
 import toPersianNumber from "@/assets/js/toPersianNumber.js";
 
-const componentName = {
-  component: ShowPhone,
-};
 const mainUrl = ref(
-  "https://api.tank.ir/api/v-1.0/market/post/search/?limit=40&page=1&"
+  "https://api.tank.ir/api/v-1.0/market/post/search/?limit=40&page=1"
 );
 const url = ref(mainUrl.value);
-const router = useRouter();
-const route = useRoute();
-const items = ref();
 const filters = reactive({
-  priceFrom: 0,
-  priceTo: 30000000,
+  price: {
+    priceFrom: 0,
+    priceTo: 30000000,
+    oldPriceFrom: 0,
+    oldPriceTo: 30000000,
+  },
   hasReport: false,
   showRam: false,
   ramValues: {
@@ -255,18 +280,13 @@ const filters = reactive({
   },
   showPrice: false,
 });
+const router = useRouter();
+const route = useRoute();
+const items = ref();
 const showLoading = ref(true);
 const showRefreshButton = ref(false);
 
 onMounted(() => {
-  route.fullPath != "/p" && (url.value += route.fullPath.split("?")[1]);
-  const query = { ...route.query };
-  query?.has_report &&
-    (filters.hasReport = query.has_report) &&
-    (componentName.component = NewPhone);
-  query?.ram_values && (filters.ramValues[query.ram_values] = true);
-  query?.price_from && (filters.priceFrom = Number(query.price_from));
-  query?.price_to && (filters.priceTo = Number(query.price_to));
   getSearchData();
 });
 
@@ -294,87 +314,74 @@ async function getSearchData() {
 }
 
 watch(
-  () => route.query,
+  () => url.value,
   () => {
-    filters.showPrice = false;
-    filters.showRam = false;
-    componentName.component = ShowPhone;
-
-    route.fullPath != "/p"
-      ? (url.value = mainUrl.value + route.fullPath.split("?")[1])
-      : (url.value = mainUrl.value);
-
-    const query = { ...route.query };
-
-    query?.has_report
-      ? (filters.hasReport = query.has_report) &&
-        (componentName.component = NewPhone)
-      : (filters.hasReport = false);
-
-    query?.ram_values && (filters.ramValues[query.ram_alues] = true);
-    query?.price_from
-      ? (filters.priceFrom = Number(query.price_from))
-      : (filters.priceFrom = 0);
-
-    query?.price_to
-      ? (filters.priceTo = Number(query.price_to))
-      : (filters.priceTo = 30000000);
     showLoading.value = true;
-    
     getSearchData();
   }
 );
 
-function addRamValues(event, check) {
-  Object.keys(filters.ramValues).forEach((key) => {
-    filters.ramValues[key] = false;
-  });
-
-  filters.ramValues[event.target.value] = check;
-  const isTrue = [...Object.values(filters.ramValues)].some(
-    (element) => element === true
-  );
-
-  const query = { ...route.query };
-  isTrue
-    ? (query["ram_values"] = event.target.value)
-    : delete query["ram_values"];
-  router.push({ path: "/p", query: { ...query } });
+function addRamValues() {
+  url.value.includes(`&ram_values=${event.target.value}`)
+    ? (url.value = url.value.replace(`&ram_values=${event.target.value}`, ""))
+    : (url.value += `&ram_values=${event.target.value}`);
 }
 
-function deleteRamValues() {
-  Object.keys(filters.ramValues).forEach((key) => {
-    filters.ramValues[key] = false;
-  });
-  const query = { ...route.query };
-  delete query["ram_values"];
-  router.push({ query: { ...query } });
+function deleteRamValues(event) {
+  const value = event.target.ariaLabel;
+  filters.ramValues[value] = false;
+
+  url.value = url.value.replace(`&ram_values=${value}`, "");
 }
 
-function hasReported(key, val) {
-  const query = { ...route.query };
-  query[key]
-    ? delete query[key] && (componentName.component = ShowPhone)
-    : (query[key] = val) && (componentName.component = NewPhone);
-  router.push({ path: "/p", query: { ...query } });
+function hasReported() {
+  url.value.includes("&has_report=true")
+    ? (url.value = url.value.replace("&has_report=true", ""))
+    : (url.value += "&has_report=true");
 }
 
 function UpdateValues(event) {
-  filters.priceFrom = event.minValue;
-  filters.priceTo = event.maxValue;
+  filters.price.priceFrom = event.minValue;
+  filters.price.priceTo = event.maxValue;
 }
 
 function setPrice() {
-  const query = { ...route.query };
-  filters.priceFrom != 0 && (query["price_from"] = filters.priceFrom);
-  filters.priceTo != 30000000 && (query["price_to"] = filters.priceTo);
-  router.push({ query: { ...query } });
+  filters.price.priceFrom != 0
+    ? (url.value = url.value.replace(
+        `&price_from=${filters.price.oldPriceFrom}`,
+        ""
+      )) && (url.value += `&price_from=${filters.price.priceFrom}`)
+    : (url.value = url.value.replace(
+        `&price_from=${filters.price.oldPriceFrom}`,
+        ""
+      ));
+
+  filters.price.oldPriceFrom = filters.price.priceFrom;
+
+  filters.price.priceTo != 30000000
+    ? (url.value = url.value.replace(
+        `&price_to=${filters.price.oldPriceTo}`,
+        ""
+      )) && (url.value += `&price_to=${filters.price.priceTo}`)
+    : (url.value = url.value.replace(
+        `&price_to=${filters.price.oldPriceTo}`,
+        ""
+      ));
+
+  filters.price.oldPriceTo = filters.price.priceTo;
 }
 
-function deleteFilter(value) {
-  const query = { ...route.query };
-  delete query[value];
-  router.push({ query: { ...query } });
+function deleteAllFilters() {
+  filters.hasReport = false;
+
+  Object.keys(filters.ramValues).forEach(
+    (key) => (filters.ramValues[key] = false)
+  );
+
+  filters.price.priceFrom = filters.price.oldPriceFrom = 0;
+  filters.price.priceTo = filters.price.oldPriceTo = 30000000;
+
+  url.value = mainUrl.value;
 }
 </script>
 

@@ -28,5 +28,3 @@ const props = defineProps({
   componentName: { type: Object, required: true },
 });
 </script>
-
-<style></style>

@@ -1,4 +1,4 @@
-export default function insertrialcamma(num) {
+export default function insertRialCamma(num) {
     let result = "";
     for (let i = 0; i < num.length; i++) {
         let carry = num.substr(num.length - i - 1, 1);

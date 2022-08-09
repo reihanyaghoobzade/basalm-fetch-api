@@ -18,5 +18,3 @@ import toPersianNumber from "@/assets/js/toPersianNumber.js";
 
 const props = defineProps({ data: { type: Object, required: true } });
 </script>
-
-<style></style>

@@ -43,5 +43,3 @@ function searchQuery() {
   });
 }
 </script>
-
-<style></style>

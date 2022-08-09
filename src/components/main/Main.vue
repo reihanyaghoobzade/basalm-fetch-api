@@ -88,5 +88,3 @@ const datas = computed(() => {
   ]);
 });
 </script>
-
-<style></style>
